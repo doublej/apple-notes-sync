@@ -16,11 +16,29 @@ DEFAULT_NOTES_TITLE = "Tasks"
 
 def _common_options(fn: click.decorators.FC) -> click.decorators.FC:
     """Shared CLI options for all sync commands."""
-    fn = click.option("--file", "file_path", type=click.Path(exists=True, path_type=Path), default=DEFAULT_FILE, help="Markdown file to sync.")(fn)
-    fn = click.option("--state", "state_path", type=click.Path(path_type=Path), default=DEFAULT_STATE, help="State file location.")(fn)
-    fn = click.option("--reminders-list", default=DEFAULT_REMINDERS_LIST, help="Reminders list name.")(fn)
-    fn = click.option("--notes-folder", default=DEFAULT_NOTES_FOLDER, help="Notes folder name.")(fn)
-    fn = click.option("--notes-title", default=DEFAULT_NOTES_TITLE, help="Notes note title.")(fn)
+    fn = click.option(
+        "--file",
+        "file_path",
+        type=click.Path(exists=True, path_type=Path),
+        default=DEFAULT_FILE,
+        help="Markdown file to sync.",
+    )(fn)
+    fn = click.option(
+        "--state",
+        "state_path",
+        type=click.Path(path_type=Path),
+        default=DEFAULT_STATE,
+        help="State file location.",
+    )(fn)
+    fn = click.option(
+        "--reminders-list", default=DEFAULT_REMINDERS_LIST, help="Reminders list name."
+    )(fn)
+    fn = click.option(
+        "--notes-folder", default=DEFAULT_NOTES_FOLDER, help="Notes folder name."
+    )(fn)
+    fn = click.option(
+        "--notes-title", default=DEFAULT_NOTES_TITLE, help="Notes note title."
+    )(fn)
     return fn
 
 

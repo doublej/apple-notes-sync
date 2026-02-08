@@ -51,12 +51,14 @@ def list_reminders(list_name: str) -> list[dict]:
         parts = line.split("|||")
         if len(parts) < 4:
             continue
-        reminders.append({
-            "id": parts[0],
-            "name": parts[1],
-            "body": parts[2],
-            "completed": parts[3] == "true",
-        })
+        reminders.append(
+            {
+                "id": parts[0],
+                "name": parts[1],
+                "body": parts[2],
+                "completed": parts[3] == "true",
+            }
+        )
     return reminders
 
 

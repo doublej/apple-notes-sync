@@ -5,9 +5,7 @@ import re
 
 def parse_tasks(content: str) -> list[dict]:
     """Parse ## Tasks section into structured tasks."""
-    match = re.search(
-        r"^## Tasks\n(.*?)(?=^## |\Z)", content, re.MULTILINE | re.DOTALL
-    )
+    match = re.search(r"^## Tasks\n(.*?)(?=^## |\Z)", content, re.MULTILINE | re.DOTALL)
     if not match:
         return []
 
@@ -24,11 +22,13 @@ def parse_tasks(content: str) -> list[dict]:
         if task_match:
             completed = task_match.group(1).lower() == "x"
             text = task_match.group(2).strip()
-            tasks.append({
-                "heading": current_heading,
-                "text": text,
-                "completed": completed,
-            })
+            tasks.append(
+                {
+                    "heading": current_heading,
+                    "text": text,
+                    "completed": completed,
+                }
+            )
 
     return tasks
 

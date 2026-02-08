@@ -10,8 +10,7 @@ from apple_notes_sync.protobuf import field_bytes, field_str, field_varint
 from apple_notes_sync.reminders import _run as _osascript
 
 NOTES_DB = (
-    Path.home()
-    / "Library/Group Containers/group.com.apple.notes/NoteStore.sqlite"
+    Path.home() / "Library/Group Containers/group.com.apple.notes/NoteStore.sqlite"
 )
 
 # Sentinel value used in CRDT to mark end-of-runs (max uint32)

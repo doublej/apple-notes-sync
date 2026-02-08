@@ -78,7 +78,9 @@ def push(
 
         if state_task:
             if state_task["completed"] != task["completed"]:
-                set_completed(reminders_list, state_task["reminder_id"], task["completed"])
+                set_completed(
+                    reminders_list, state_task["reminder_id"], task["completed"]
+                )
                 state_task["completed"] = task["completed"]
                 print(f"  updated: {name} -> {'done' if task['completed'] else 'todo'}")
             else:
@@ -87,17 +89,21 @@ def push(
             rid = create_reminder(reminders_list, name, task["text"])
             if task["completed"]:
                 set_completed(reminders_list, rid, True)
-            state["tasks"].append({
-                "heading": task["heading"],
-                "text": task["text"],
-                "completed": task["completed"],
-                "reminder_id": rid,
-            })
+            state["tasks"].append(
+                {
+                    "heading": task["heading"],
+                    "text": task["text"],
+                    "completed": task["completed"],
+                    "reminder_id": rid,
+                }
+            )
             print(f"  created: {name}")
 
     for st in state["tasks"]:
         if task_key(st) not in md_keys:
-            print(f"  removed from markdown: [{st['heading']}] {extract_reminder_name(st['text'])}")
+            print(
+                f"  removed from markdown: [{st['heading']}] {extract_reminder_name(st['text'])}"
+            )
 
     # Push to Notes — try native protobuf first, fall back to HTML
     sections = tasks_to_sections(tasks)
@@ -130,10 +136,14 @@ def pull(
 
         if state_task:
             if state_task["completed"] != reminder["completed"]:
-                content = update_task(content, state_task["text"], reminder["completed"])
+                content = update_task(
+                    content, state_task["text"], reminder["completed"]
+                )
                 state_task["completed"] = reminder["completed"]
                 name = extract_reminder_name(state_task["text"])
-                print(f"  updated: {name} -> {'done' if reminder['completed'] else 'todo'}")
+                print(
+                    f"  updated: {name} -> {'done' if reminder['completed'] else 'todo'}"
+                )
         else:
             text = reminder["body"] or reminder["name"]
             heading = "Unsorted"
@@ -145,12 +155,14 @@ def pull(
                 content = append_task(content, heading, text)
                 print(f"  added from Reminders: [{heading}] {reminder['name']}")
 
-            state["tasks"].append({
-                "heading": heading,
-                "text": text,
-                "completed": reminder["completed"],
-                "reminder_id": reminder["id"],
-            })
+            state["tasks"].append(
+                {
+                    "heading": heading,
+                    "text": text,
+                    "completed": reminder["completed"],
+                    "reminder_id": reminder["id"],
+                }
+            )
 
     return content, state
 
