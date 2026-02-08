@@ -73,44 +73,39 @@ def push(
     state_by_key = {task_key(st): st for st in state["tasks"]}
     md_keys: set[tuple[str, str]] = set()
 
+    prefix = "would " if dry_run else ""
+
     for task in tasks:
         key = task_key(task)
         md_keys.add(key)
         state_task = state_by_key.get(key)
         name = f"[{task['heading']}] {extract_reminder_name(task['text'])}"
+        done_label = "done" if task["completed"] else "todo"
 
-        if state_task:
-            if state_task["completed"] != task["completed"]:
-                if dry_run:
-                    print(
-                        f"  would update: {name} -> {'done' if task['completed'] else 'todo'}"
-                    )
-                else:
-                    set_completed(
-                        reminders_list, state_task["reminder_id"], task["completed"]
-                    )
-                    state_task["completed"] = task["completed"]
-                    print(
-                        f"  updated: {name} -> {'done' if task['completed'] else 'todo'}"
-                    )
-            else:
-                print(f"  unchanged: {name}")
-        else:
-            if dry_run:
-                print(f"  would create: {name}")
-            else:
-                rid = create_reminder(reminders_list, name, task["text"])
-                if task["completed"]:
-                    set_completed(reminders_list, rid, True)
-                state["tasks"].append(
-                    {
-                        "heading": task["heading"],
-                        "text": task["text"],
-                        "completed": task["completed"],
-                        "reminder_id": rid,
-                    }
+        if state_task and state_task["completed"] != task["completed"]:
+            if not dry_run:
+                set_completed(
+                    reminders_list, state_task["reminder_id"], task["completed"]
                 )
-                print(f"  created: {name}")
+                state_task["completed"] = task["completed"]
+            print(f"  {prefix}update: {name} -> {done_label}")
+        elif state_task:
+            print(f"  unchanged: {name}")
+        elif dry_run:
+            print(f"  would create: {name}")
+        else:
+            rid = create_reminder(reminders_list, name, task["text"])
+            if task["completed"]:
+                set_completed(reminders_list, rid, True)
+            state["tasks"].append(
+                {
+                    "heading": task["heading"],
+                    "text": task["text"],
+                    "completed": task["completed"],
+                    "reminder_id": rid,
+                }
+            )
+            print(f"  created: {name}")
 
     for st in state["tasks"]:
         if task_key(st) not in md_keys:

@@ -137,13 +137,9 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
     print(f"  Writing directly to Notes database at {NOTES_DB}")
     try:
         db = sqlite3.connect(str(NOTES_DB))
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Cannot open Notes database: {e}") from None
-
-    found = False
-    try:
         note_pk = _find_note(db, folder, title)
         if not note_pk:
+            db.close()
             return False
         protobuf_data = build_note_protobuf(title, sections)
         db.execute(
@@ -151,15 +147,12 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
             (protobuf_data, note_pk),
         )
         db.commit()
-        found = True
-    except sqlite3.Error as e:
-        raise RuntimeError(f"Notes database write failed: {e}") from None
-    finally:
         db.close()
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Notes database error: {e}") from None
 
-    if found:
-        _reload_notes()
-    return found
+    _reload_notes()
+    return True
 
 
 def _reload_notes() -> None:
