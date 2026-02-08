@@ -130,7 +130,16 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
 
     Returns True if updated, False if note not found.
     """
-    db = sqlite3.connect(str(NOTES_DB))
+    if not NOTES_DB.exists():
+        print(f"  Notes database not found at {NOTES_DB}")
+        return False
+
+    print(f"  Writing directly to Notes database at {NOTES_DB}")
+    try:
+        db = sqlite3.connect(str(NOTES_DB))
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Cannot open Notes database: {e}") from None
+
     found = False
     try:
         note_pk = _find_note(db, folder, title)
@@ -143,6 +152,8 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
         )
         db.commit()
         found = True
+    except sqlite3.Error as e:
+        raise RuntimeError(f"Notes database write failed: {e}") from None
     finally:
         db.close()
 
@@ -153,7 +164,10 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
 
 def _reload_notes() -> None:
     """Force Notes.app to re-read from database via SIGHUP."""
-    subprocess.run(["killall", "-HUP", "Notes"], capture_output=True, timeout=5)
+    try:
+        subprocess.run(["killall", "-HUP", "Notes"], capture_output=True, timeout=5)
+    except subprocess.TimeoutExpired:
+        print("  Warning: Notes reload timed out (Notes.app may need manual restart)")
 
 
 # --- HTML fallback ---
