@@ -25,12 +25,13 @@ Use `just` as the task runner:
 src/apple_notes_sync/
 ├── __init__.py
 ├── cli.py              # Click CLI entry point
-├── sync.py             # Core sync logic (push/pull/status)
+├── fileutil.py         # Backup and atomic write helpers
 ├── markdown.py         # Markdown task parsing and writing
-├── reminders.py        # AppleScript wrapper for Reminders.app
 ├── notes.py            # Apple Notes integration (protobuf + HTML fallback)
 ├── protobuf.py         # Minimal protobuf encoder for Notes ZDATA
-└── state.py            # JSON state file management
+├── reminders.py        # AppleScript wrapper for Reminders.app
+├── state.py            # JSON state file management
+└── sync.py             # Core sync logic (push/pull/status)
 pyproject.toml
 Justfile
 ```
@@ -70,24 +71,7 @@ apple-notes-sync status            # Show sync state diff
 - `--reminders-list NAME` — Reminders list name (default: `Current Focus`)
 - `--notes-folder NAME` — Notes folder name (default: `Current Focus`)
 - `--notes-title NAME` — Notes note title (default: `Tasks`)
-
----
-
-## Source Code Reference
-
-A working prototype exists at `/Users/jurrejan/Documents/development/_life/.automation/`. Port the logic from these files into the proper src/ layout:
-
-| Prototype file | Target module | What it does |
-|----------------|---------------|--------------|
-| `applescript_reminders.py` | `reminders.py` | AppleScript wrapper for Reminders CRUD |
-| `applescript_notes.py` (lines 1-50) | `protobuf.py` | Minimal protobuf encoder (varint, tag, field helpers) |
-| `applescript_notes.py` (lines 50-145) | `notes.py` | Notes protobuf builder + SQLite writer + SIGHUP reload |
-| `applescript_notes.py` (lines 145-217) | `notes.py` | HTML fallback via AppleScript |
-| `sync_tasks.py` (lines 41-113) | `markdown.py` | Parse/update/append tasks in markdown |
-| `sync_tasks.py` (lines 115-170) | `state.py` + `sync.py` | State file + sections grouping |
-| `sync_tasks.py` (lines 172-344) | `sync.py` | Push/pull/status sync operations |
-
-**Read each prototype file before porting.** The code is already working and tested against real Apple Notes/Reminders.
+- `--dry-run` — preview changes without writing anything
 
 ---
 
@@ -151,16 +135,3 @@ All Apple automation via `subprocess.run(["osascript", "-e", script])` with 30s 
 ```
 
 Reminder names use format: `[Section Name] Bold label` (extracted from `**bold**` in task text).
-
----
-
-## Implementation Priority
-
-1. Port `protobuf.py` first (pure functions, easily testable)
-2. Port `reminders.py` (AppleScript wrapper)
-3. Port `notes.py` (depends on protobuf.py)
-4. Port `markdown.py` (pure functions, easily testable)
-5. Port `state.py` (simple JSON load/save)
-6. Port `sync.py` (orchestrates everything)
-7. Wire up `cli.py` with Click commands
-8. Add tests for pure functions (markdown parsing, protobuf encoding)

@@ -1,45 +1,8 @@
-# Apple Notes Sync
+# Agent Guidelines
 
-> Two-way task sync between Markdown, Apple Reminders, and Apple Notes with native checklists
+See [CLAUDE.md](CLAUDE.md) for stack, project structure, conventions, and CLI commands.
 
-## Stack
-
-- Python 3.12, uv, ruff, mypy, pytest
-- CLI framework: Click
-
-## Commands
-
-Use `just` as the task runner:
-
-- `just check` — run all checks (loc-check + lint + format-check + typecheck + test)
-- `just loc-check` — check file lengths (warn >300, error >400 lines)
-- `just run` — run the CLI
-- `just test` — run tests
-- `just lint-fix` — auto-fix lint issues
-- `just format` — format code
-
-## Project Structure
-
-```
-src/apple_notes_sync/
-├── __init__.py
-└── cli.py          # Click CLI entry point
-pyproject.toml      # project config, dependencies, script entry point
-Justfile            # task runner
-```
-
-## Conventions
-
-- src/ layout with hatchling build backend
-- Module name: `apple_notes_sync`
-- Entry point: `apple_notes_sync.cli:main`
-- Keep functions small (5–10 lines target, 20 max)
-- Prefer explicit, readable code over cleverness
-- Handle errors at boundaries; let unexpected errors surface
-
-## Agent
-
-### Verify Loop
+## Verify Loop
 
 Run after every change:
 
@@ -57,7 +20,7 @@ Or use `just check` to run lint + format-check + typecheck + test in one go.
 
 ### Common Tasks
 
-- Add a Click command: define a function decorated with `@cli.command()` in `cli.py`
+- Add a Click command: define a function decorated with `@main.command()` in `cli.py`
 - Add a command group: use `@click.group()` and register subcommands
 - Add a subcommand module: create a new file in the package, import and register in `cli.py`
 - Add a dependency: `uv add <package>`
