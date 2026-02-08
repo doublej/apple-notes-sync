@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from apple_notes_sync.state import load, save, task_key
 
 
@@ -23,3 +25,28 @@ def test_save_and_load(tmp_path: Path):
     loaded = load(path)
     assert loaded["tasks"] == [{"heading": "A", "text": "B"}]
     assert loaded["last_sync"] is not None
+
+
+def test_load_corrupted_json(tmp_path: Path):
+    path = tmp_path / "state.json"
+    path.write_text("{broken json")
+    with pytest.raises(SystemExit, match="Corrupted state file"):
+        load(path)
+
+
+def test_load_corrupted_mentions_bak(tmp_path: Path):
+    path = tmp_path / "state.json"
+    path.write_text("{broken")
+    bak = path.with_suffix(".json.bak")
+    bak.write_text('{"last_sync": null, "tasks": []}')
+    with pytest.raises(SystemExit, match=r"restore from.*\.bak"):
+        load(path)
+
+
+def test_save_creates_backup(tmp_path: Path):
+    path = tmp_path / "state.json"
+    path.write_text('{"last_sync": null, "tasks": []}')
+    save(path, {"last_sync": None, "tasks": []})
+    bak = path.with_suffix(".json.bak")
+    assert bak.exists()
+    assert "tasks" in bak.read_text()
