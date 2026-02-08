@@ -59,6 +59,8 @@ def push(
     reminders_list: str,
     notes_folder: str,
     notes_title: str,
+    *,
+    dry_run: bool = False,
 ) -> dict:
     """Push markdown tasks to Reminders + Notes. Returns updated state."""
     tasks = parse_tasks(content)
@@ -66,7 +68,8 @@ def push(
         print("No tasks found in ## Tasks section")
         return state
 
-    create_list(reminders_list)
+    if not dry_run:
+        create_list(reminders_list)
     state_by_key = {task_key(st): st for st in state["tasks"]}
     md_keys: set[tuple[str, str]] = set()
 
@@ -78,26 +81,36 @@ def push(
 
         if state_task:
             if state_task["completed"] != task["completed"]:
-                set_completed(
-                    reminders_list, state_task["reminder_id"], task["completed"]
-                )
-                state_task["completed"] = task["completed"]
-                print(f"  updated: {name} -> {'done' if task['completed'] else 'todo'}")
+                if dry_run:
+                    print(
+                        f"  would update: {name} -> {'done' if task['completed'] else 'todo'}"
+                    )
+                else:
+                    set_completed(
+                        reminders_list, state_task["reminder_id"], task["completed"]
+                    )
+                    state_task["completed"] = task["completed"]
+                    print(
+                        f"  updated: {name} -> {'done' if task['completed'] else 'todo'}"
+                    )
             else:
                 print(f"  unchanged: {name}")
         else:
-            rid = create_reminder(reminders_list, name, task["text"])
-            if task["completed"]:
-                set_completed(reminders_list, rid, True)
-            state["tasks"].append(
-                {
-                    "heading": task["heading"],
-                    "text": task["text"],
-                    "completed": task["completed"],
-                    "reminder_id": rid,
-                }
-            )
-            print(f"  created: {name}")
+            if dry_run:
+                print(f"  would create: {name}")
+            else:
+                rid = create_reminder(reminders_list, name, task["text"])
+                if task["completed"]:
+                    set_completed(reminders_list, rid, True)
+                state["tasks"].append(
+                    {
+                        "heading": task["heading"],
+                        "text": task["text"],
+                        "completed": task["completed"],
+                        "reminder_id": rid,
+                    }
+                )
+                print(f"  created: {name}")
 
     for st in state["tasks"]:
         if task_key(st) not in md_keys:
@@ -106,13 +119,16 @@ def push(
             )
 
     # Push to Notes — try native protobuf first, fall back to HTML
-    sections = tasks_to_sections(tasks)
-    if update_note_data(notes_folder, notes_title, sections):
-        print("  pushed to Notes.app (native checklists)")
+    if dry_run:
+        print(f"  would push to Notes.app ({notes_folder}/{notes_title})")
     else:
-        html = build_notes_html(tasks)
-        create_or_update_note(notes_folder, notes_title, html)
-        print("  pushed to Notes.app (HTML fallback)")
+        sections = tasks_to_sections(tasks)
+        if update_note_data(notes_folder, notes_title, sections):
+            print("  pushed to Notes.app (native checklists)")
+        else:
+            html = build_notes_html(tasks)
+            create_or_update_note(notes_folder, notes_title, html)
+            print("  pushed to Notes.app (HTML fallback)")
 
     return state
 
@@ -121,8 +137,13 @@ def pull(
     content: str,
     state: dict,
     reminders_list: str,
+    *,
+    dry_run: bool = False,
 ) -> tuple[str, dict]:
     """Pull Reminders state into markdown. Returns (updated_content, updated_state)."""
+    if dry_run:
+        print("  would pull from Reminders (read-only, no changes)")
+        return content, state
     reminders = list_reminders(reminders_list)
     if not reminders:
         print("No reminders found in list")

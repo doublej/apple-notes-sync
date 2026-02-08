@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 
 from apple_notes_sync import state as state_mod
+from apple_notes_sync.fileutil import atomic_write, backup
 from apple_notes_sync.sync import pull, push, show_status
 
 DEFAULT_FILE = Path("Now/Current Focus.md")
@@ -39,7 +40,21 @@ def _common_options(fn: click.decorators.FC) -> click.decorators.FC:
     fn = click.option(
         "--notes-title", default=DEFAULT_NOTES_TITLE, help="Notes note title."
     )(fn)
+    fn = click.option(
+        "--dry-run",
+        is_flag=True,
+        default=False,
+        help="Preview changes without writing.",
+    )(fn)
     return fn
+
+
+def _read_file(file_path: Path) -> str:
+    """Read file content with clear error on failure."""
+    try:
+        return file_path.read_text()
+    except OSError as e:
+        raise click.ClickException(f"Cannot read {file_path}: {e}") from None
 
 
 @click.group()
@@ -55,13 +70,15 @@ def push_cmd(
     reminders_list: str,
     notes_folder: str,
     notes_title: str,
+    dry_run: bool,
 ) -> None:
     """Push markdown tasks to Reminders + Notes."""
     click.echo("Push: markdown -> Reminders + Notes")
-    content = file_path.read_text()
+    content = _read_file(file_path)
     st = state_mod.load(state_path)
-    st = push(content, st, reminders_list, notes_folder, notes_title)
-    state_mod.save(state_path, st)
+    st = push(content, st, reminders_list, notes_folder, notes_title, dry_run=dry_run)
+    if not dry_run:
+        state_mod.save(state_path, st)
 
 
 @main.command("pull")
@@ -72,14 +89,17 @@ def pull_cmd(
     reminders_list: str,
     notes_folder: str,
     notes_title: str,
+    dry_run: bool,
 ) -> None:
     """Pull Reminders state into markdown."""
     click.echo("Pull: Reminders -> markdown")
-    content = file_path.read_text()
+    content = _read_file(file_path)
     st = state_mod.load(state_path)
-    content, st = pull(content, st, reminders_list)
-    file_path.write_text(content)
-    state_mod.save(state_path, st)
+    content, st = pull(content, st, reminders_list, dry_run=dry_run)
+    if not dry_run:
+        backup(file_path)
+        atomic_write(file_path, content)
+        state_mod.save(state_path, st)
 
 
 @main.command("sync")
@@ -90,19 +110,23 @@ def sync_cmd(
     reminders_list: str,
     notes_folder: str,
     notes_title: str,
+    dry_run: bool,
 ) -> None:
     """Full two-way sync (push then pull)."""
     click.echo("Push: markdown -> Reminders + Notes")
-    content = file_path.read_text()
+    content = _read_file(file_path)
     st = state_mod.load(state_path)
-    st = push(content, st, reminders_list, notes_folder, notes_title)
-    state_mod.save(state_path, st)
+    st = push(content, st, reminders_list, notes_folder, notes_title, dry_run=dry_run)
+    if not dry_run:
+        state_mod.save(state_path, st)
 
     click.echo("Pull: Reminders -> markdown")
-    content = file_path.read_text()
-    content, st = pull(content, st, reminders_list)
-    file_path.write_text(content)
-    state_mod.save(state_path, st)
+    content = _read_file(file_path)
+    content, st = pull(content, st, reminders_list, dry_run=dry_run)
+    if not dry_run:
+        backup(file_path)
+        atomic_write(file_path, content)
+        state_mod.save(state_path, st)
 
 
 @main.command()
@@ -113,9 +137,10 @@ def status(
     reminders_list: str,
     notes_folder: str,
     notes_title: str,
+    dry_run: bool,
 ) -> None:
     """Show sync state diff."""
-    content = file_path.read_text()
+    content = _read_file(file_path)
     st = state_mod.load(state_path)
     show_status(content, st, reminders_list)
 
