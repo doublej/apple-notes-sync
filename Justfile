@@ -18,6 +18,11 @@ lint:
     uv run ruff check .
 
 [group('quality')]
+fix:
+    uv run ruff check --fix .
+    uv run ruff format .
+
+[group('quality')]
 lint-fix:
     uv run ruff check --fix .
 
@@ -61,6 +66,22 @@ check:
     just typecheck
     @echo '→ Running tests...'
     just test
+
+[group('sync')]
+push *ARGS:
+    uv run apple-notes-sync push {{ARGS}}
+
+[group('sync')]
+pull *ARGS:
+    uv run apple-notes-sync pull {{ARGS}}
+
+[group('sync')]
+sync *ARGS:
+    uv run apple-notes-sync sync {{ARGS}}
+
+[group('sync')]
+status *ARGS:
+    uv run apple-notes-sync status {{ARGS}}
 
 [group('cleanup')]
 clean:

@@ -13,11 +13,13 @@
 Use `just` as the task runner:
 
 - `just check` — run all checks (loc-check + lint + format-check + typecheck + test)
+- `just fix` — auto-fix lint + format in one step
 - `just loc-check` — check file lengths (warn >300, error >400 lines)
 - `just run` — run the CLI
 - `just test` — run tests
 - `just lint-fix` — auto-fix lint issues
 - `just format` — format code
+- `just push` / `pull` / `sync` / `status` — sync command shortcuts (pass extra args)
 
 ## Project Structure
 
