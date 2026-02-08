@@ -5,14 +5,25 @@ import subprocess
 
 def _run(script: str) -> str:
     """Run AppleScript and return stdout."""
-    result = subprocess.run(
-        ["osascript", "-e", script],
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
+    try:
+        result = subprocess.run(
+            ["osascript", "-e", script],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(
+            "Reminders.app timeout (>30s). Try restarting Reminders."
+        ) from None
     if result.returncode != 0:
-        raise RuntimeError(f"AppleScript error: {result.stderr.strip()}")
+        stderr = result.stderr.strip()
+        if "not allowed" in stderr.lower():
+            raise RuntimeError(
+                "Automation permission required. "
+                "Grant in System Settings > Privacy & Security > Automation."
+            )
+        raise RuntimeError(f"AppleScript error: {stderr}")
     return result.stdout.strip()
 
 
