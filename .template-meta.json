@@ -1,0 +1,13 @@
+{
+  "template": "python/cli",
+  "rendered_at": "2026-02-08T13:07:20.339290+00:00",
+  "context": {
+    "project_name": "Apple Notes Sync",
+    "project_slug": "apple-notes-sync",
+    "description": "Two-way task sync between Markdown, Apple Reminders, and Apple Notes with native checklists",
+    "author": "JJ",
+    "python_version": "3.12",
+    "mcp_servers": "none",
+    "mcp_scope": "project"
+  }
+}
