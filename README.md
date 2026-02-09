@@ -30,7 +30,7 @@ apple-notes-sync status            # Show sync state diff
 
 | Command | Description |
 |---------|-------------|
-| `just check` | Run all checks (loc-check + lint + format + typecheck + test) |
+| `just check` | Run all checks (loc-check + lint + format-check + typecheck + test) |
 | `just run` | Run the CLI |
 | `just test` | Run tests (unit + integration) |
 | `just test-unit` | Run unit tests only |
