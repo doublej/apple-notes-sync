@@ -1,4 +1,4 @@
-set shell := ["zsh", "-euo", "pipefail"]
+set shell := ["zsh", "-euo", "pipefail", "-c"]
 
 default:
     @just --list
@@ -43,6 +43,10 @@ test:
     uv run pytest
 
 [group('quality')]
+test-unit:
+    uv run pytest -m "not integration"
+
+[group('quality')]
 loc-check:
     #!/usr/bin/env zsh
     setopt null_glob
@@ -68,20 +72,24 @@ check:
     just test
 
 [group('sync')]
-push *ARGS:
-    uv run apple-notes-sync push {{ARGS}}
-
-[group('sync')]
-pull *ARGS:
-    uv run apple-notes-sync pull {{ARGS}}
-
-[group('sync')]
 sync *ARGS:
     uv run apple-notes-sync sync {{ARGS}}
 
 [group('sync')]
 status *ARGS:
     uv run apple-notes-sync status {{ARGS}}
+
+[group('sync')]
+reminders-push *ARGS:
+    uv run apple-notes-sync reminders push {{ARGS}}
+
+[group('sync')]
+reminders-pull *ARGS:
+    uv run apple-notes-sync reminders pull {{ARGS}}
+
+[group('sync')]
+notes-push *ARGS:
+    uv run apple-notes-sync notes push {{ARGS}}
 
 [group('cleanup')]
 clean:
