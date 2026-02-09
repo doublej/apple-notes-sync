@@ -134,21 +134,21 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
         return False
 
     print(f"  Writing directly to Notes database at {NOTES_DB}")
+    db = sqlite3.connect(str(NOTES_DB))
     try:
-        db = sqlite3.connect(str(NOTES_DB))
-        note_pk = _find_note(db, folder, title)
-        if not note_pk:
-            db.close()
-            return False
-        protobuf_data = build_note_protobuf(title, sections)
-        db.execute(
-            "UPDATE ZICNOTEDATA SET ZDATA = ? WHERE ZNOTE = ?",
-            (protobuf_data, note_pk),
-        )
-        db.commit()
-        db.close()
+        with db:  # auto-commit on success, auto-rollback on exception
+            note_pk = _find_note(db, folder, title)
+            if not note_pk:
+                return False
+            protobuf_data = build_note_protobuf(title, sections)
+            db.execute(
+                "UPDATE ZICNOTEDATA SET ZDATA = ? WHERE ZNOTE = ?",
+                (protobuf_data, note_pk),
+            )
     except sqlite3.Error as e:
         raise RuntimeError(f"Notes database error: {e}") from None
+    finally:
+        db.close()
 
     return True
 
