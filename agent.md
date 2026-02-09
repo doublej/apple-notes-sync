@@ -4,14 +4,9 @@ See [CLAUDE.md](CLAUDE.md) for stack, project structure, conventions, and CLI co
 
 ## Verify Loop
 
-Run after every change:
+Run `just check` after every change (loc-check + lint + format-check + typecheck + test).
 
-1. `just lint-fix`
-2. `just format`
-3. `just typecheck`
-4. `just test`
-
-Or use `just check` to run lint + format-check + typecheck + test in one go.
+To auto-fix before checking: `just fix` (lint + format), then `just check`.
 
 ### Auto-fixable
 

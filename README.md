@@ -19,19 +19,21 @@ uv run apple-notes-sync --help
 ## CLI Commands
 
 ```
-apple-notes-sync push       # Markdown -> Reminders + Notes
-apple-notes-sync pull       # Reminders -> Markdown
-apple-notes-sync sync       # Full two-way (push then pull)
-apple-notes-sync status     # Show sync state diff
+apple-notes-sync reminders push    # Markdown -> Reminders only
+apple-notes-sync reminders pull    # Reminders -> Markdown
+apple-notes-sync notes push        # Markdown -> Notes only
+apple-notes-sync sync              # Full: reminders push + notes push + pull
+apple-notes-sync status            # Show sync state diff
 ```
 
 ## Development
 
 | Command | Description |
 |---------|-------------|
-| `just check` | Run all checks (lint + format + typecheck + test) |
+| `just check` | Run all checks (loc-check + lint + format + typecheck + test) |
 | `just run` | Run the CLI |
-| `just test` | Run tests |
+| `just test` | Run tests (unit + integration) |
+| `just test-unit` | Run unit tests only |
 | `just lint-fix` | Auto-fix lint issues |
 | `just format` | Format code |
 
