@@ -2,7 +2,6 @@
 
 import gzip
 import sqlite3
-import subprocess
 import uuid
 from pathlib import Path
 
@@ -151,16 +150,7 @@ def update_note_data(folder: str, title: str, sections: list[dict]) -> bool:
     except sqlite3.Error as e:
         raise RuntimeError(f"Notes database error: {e}") from None
 
-    _reload_notes()
     return True
-
-
-def _reload_notes() -> None:
-    """Force Notes.app to re-read from database via SIGHUP."""
-    try:
-        subprocess.run(["killall", "-HUP", "Notes"], capture_output=True, timeout=5)
-    except subprocess.TimeoutExpired:
-        print("  Warning: Notes reload timed out (Notes.app may need manual restart)")
 
 
 # --- HTML fallback ---

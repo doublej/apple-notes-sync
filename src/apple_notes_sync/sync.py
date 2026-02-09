@@ -53,16 +53,14 @@ def build_notes_html(tasks: list[dict]) -> str:
     return "\n".join(html_parts)
 
 
-def push(
+def push_reminders(
     content: str,
     state: dict,
     reminders_list: str,
-    notes_folder: str,
-    notes_title: str,
     *,
     dry_run: bool = False,
 ) -> dict:
-    """Push markdown tasks to Reminders + Notes. Returns updated state."""
+    """Push markdown tasks to Reminders. Returns updated state."""
     tasks = parse_tasks(content)
     if not tasks:
         print("No tasks found in ## Tasks section")
@@ -113,19 +111,33 @@ def push(
                 f"  removed from markdown: [{st['heading']}] {extract_reminder_name(st['text'])}"
             )
 
-    # Push to Notes — try native protobuf first, fall back to HTML
+    return state
+
+
+def push_notes(
+    content: str,
+    notes_folder: str,
+    notes_title: str,
+    *,
+    dry_run: bool = False,
+) -> None:
+    """Push markdown tasks to Notes. Try native protobuf first, fall back to HTML."""
+    tasks = parse_tasks(content)
+    if not tasks:
+        print("No tasks found in ## Tasks section")
+        return
+
     if dry_run:
         print(f"  would push to Notes.app ({notes_folder}/{notes_title})")
-    else:
-        sections = tasks_to_sections(tasks)
-        if update_note_data(notes_folder, notes_title, sections):
-            print("  pushed to Notes.app (native checklists)")
-        else:
-            html = build_notes_html(tasks)
-            create_or_update_note(notes_folder, notes_title, html)
-            print("  pushed to Notes.app (HTML fallback)")
+        return
 
-    return state
+    sections = tasks_to_sections(tasks)
+    if update_note_data(notes_folder, notes_title, sections):
+        print("  pushed to Notes.app (native checklists)")
+    else:
+        html = build_notes_html(tasks)
+        create_or_update_note(notes_folder, notes_title, html)
+        print("  pushed to Notes.app (HTML fallback)")
 
 
 def pull(
