@@ -1,5 +1,8 @@
 """Tests for the protobuf encoder."""
 
+import gzip
+
+from apple_notes_sync.notes import build_note_protobuf
 from apple_notes_sync.protobuf import (
     encode_tag,
     encode_varint,
@@ -40,3 +43,12 @@ def test_field_bytes():
 def test_field_str():
     result = field_str(2, "hi")
     assert result == b"\x12\x02hi"
+
+
+def test_build_note_protobuf_keeps_section_headings():
+    sections = [
+        {"heading": "Vlees", "tasks": [{"text": "kip", "completed": False}]},
+        {"heading": "Wijn", "tasks": [{"text": "wijn", "completed": True}]},
+    ]
+    text = gzip.decompress(build_note_protobuf("Boodschappen", sections))
+    assert b"Boodschappen\nVlees\nkip\nWijn\nwijn\n" in text

@@ -112,3 +112,21 @@ def delete_reminder(list_name: str, reminder_id: str) -> None:
             end repeat
         end tell
     ''')
+
+
+def append_to_body(list_name: str, reminder_id: str, extra: str) -> None:
+    """Append text to a reminder's body."""
+    esc_extra = extra.replace('"', '\\"')
+    _run(f'''
+        tell application "Reminders"
+            repeat with r in (reminders of list "{list_name}")
+                if id of r is "{reminder_id}" then
+                    set rbody to body of r
+                    if rbody is missing value then set rbody to ""
+                    set body of r to rbody & "
+{esc_extra}"
+                    exit repeat
+                end if
+            end repeat
+        end tell
+    ''')

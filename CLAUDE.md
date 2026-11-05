@@ -41,7 +41,7 @@ Markdown file  <->  State (.tasks-sync.json)  <->  Reminders.app (AppleScript)
 
 - **Reminders**: two-way sync via AppleScript (`reminders.py`). State file tracks `reminder_id` per task.
 - **Notes**: one-way push. Two write strategies in `notes.py`:
-  1. **Native protobuf** (preferred): writes gzipped protobuf directly to Notes SQLite DB. Produces real interactive checklists. Notes detects the DB change automatically.
+  1. **Native protobuf** (preferred): writes gzipped protobuf directly to Notes SQLite DB. Produces real interactive checklists. Notes.app is quit first — a running Notes serves a cached copy and can write it back over the row.
   2. **HTML fallback**: creates/updates notes via AppleScript when protobuf fails (e.g., note doesn't exist yet).
 - **State** (`state.py`): JSON file mapping `(heading, text)` -> reminder ID + completion status. Used as three-way merge anchor.
 - **Sync logic** (`sync.py`): `push_reminders` and `push_notes` are independent. `pull` only reads from Reminders.
